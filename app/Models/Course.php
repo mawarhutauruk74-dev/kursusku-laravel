@@ -1,0 +1,31 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+
+class Course extends Model
+{
+    protected $fillable = [
+        'code',
+        'name',
+        'description',
+        'fee',
+        'start_date',
+        'status',
+    ];
+
+    protected function casts(): array
+    {
+        return [
+            'start_date' => 'date',
+            'fee' => 'integer',
+        ];
+    }
+
+    public function enrollments(): HasMany
+    {
+        return $this->hasMany(Enrollment::class);
+    }
+}
