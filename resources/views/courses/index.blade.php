@@ -125,6 +125,10 @@
                             {{ $course->start_date?->format('d/m/Y') ?? 'Belum ditentukan' }}
                         </p>
 
+                        <p class="mb-2">
+                             <strong>Kuota:</strong> {{ $course->quota }} peserta
+                        </p>
+
                         {{-- TOMBOL AKSI --}}
                         <div class="d-flex flex-wrap gap-2">
                             <a

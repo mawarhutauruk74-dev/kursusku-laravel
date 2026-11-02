@@ -1,3 +1,4 @@
+
 <?php
 
 use Illuminate\Database\Migrations\Migration;
@@ -10,12 +11,13 @@ return new class extends Migration
     {
         Schema::create('courses', function (Blueprint $table) {
             $table->id();
-            $table->string('code')->unique();
-            $table->string('name');
+            $table->string('code', 20)->unique();
+            $table->string('name', 120);
             $table->text('description')->nullable();
-            $table->unsignedBigInteger('fee')->default(0);
-            $table->date('start_date')->nullable();
-            $table->string('status')->default('open');
+            $table->unsignedInteger('fee')->default(0);
+            $table->unsignedSmallInteger('quota')->default(20);
+            $table->date('start_date');
+            $table->enum('status', ['draft', 'open', 'closed'])->default('draft');
             $table->timestamps();
         });
     }

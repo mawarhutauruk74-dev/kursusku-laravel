@@ -8,6 +8,7 @@ use Illuminate\View\View;
 
 class CourseController extends Controller
 {
+    // Menampilkan daftar kursus
     public function index(Request $request): View
     {
         $search = $request->input('search');
@@ -21,9 +22,12 @@ class CourseController extends Controller
                         ->orWhere('description', 'like', '%' . $search . '%');
                 });
             })
-            ->when(in_array($status, ['open', 'closed'], true), function ($query) use ($status) {
-                $query->where('status', $status);
-            })
+            ->when(
+                in_array($status, ['draft', 'open', 'closed'], true),
+                function ($query) use ($status) {
+                    $query->where('status', $status);
+                }
+            )
             ->orderBy('start_date')
             ->paginate(10)
             ->withQueryString();
@@ -31,81 +35,83 @@ class CourseController extends Controller
         return view('courses.index', compact('courses', 'search', 'status'));
     }
 
+    // Menampilkan form tambah kursus
     public function create(): View
     {
         return view('courses.create');
     }
 
+    // Menyimpan kursus baru
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'code' => 'required|string|max:255|unique:courses,code',
-            'name' => 'required|string|max:255',
+            'code' => 'required|string|max:20|unique:courses,code',
+            'name' => 'required|string|max:120',
             'description' => 'nullable|string',
             'fee' => 'required|integer|min:0',
-            'start_date' => 'nullable|date',
-            'status' => 'required|in:open,closed',
+            'quota' => 'required|integer|min:1|max:500',
+            'start_date' => 'required|date',
+            'status' => 'required|string|in:draft,open,closed',
         ]);
 
         Course::create($validated);
 
         return redirect()
             ->route('courses.index')
-            ->with('success', 'Course berhasil ditambahkan.');
+            ->with('success', 'Kursus berhasil ditambahkan.');
     }
 
+    // Menampilkan detail kursus
     public function show(Course $course): View
     {
         return view('courses.show', compact('course'));
     }
 
+    // Menampilkan form edit kursus
     public function edit(Course $course): View
     {
         return view('courses.edit', compact('course'));
     }
 
+    // Memperbarui data kursus
     public function update(Request $request, Course $course)
     {
         $validated = $request->validate([
-            'code' => 'required|string|max:255|unique:courses,code,' . $course->id,
-            'name' => 'required|string|max:255',
+            'code' => 'required|string|max:20|unique:courses,code,' . $course->id,
+            'name' => 'required|string|max:120',
             'description' => 'nullable|string',
             'fee' => 'required|integer|min:0',
-            'start_date' => 'nullable|date',
-            'status' => 'required|in:open,closed',
+            'quota' => 'required|integer|min:1|max:500',
+            'start_date' => 'required|date',
+            'status' => 'required|string|in:draft,open,closed',
         ]);
 
         $course->update($validated);
 
         return redirect()
             ->route('courses.index')
-            ->with('success', 'Course berhasil diperbarui.');
+            ->with('success', 'Kursus berhasil diperbarui.');
     }
 
+    // Menghapus kursus
     public function destroy(Course $course)
     {
         $course->delete();
 
         return redirect()
             ->route('courses.index')
-            ->with('success', 'Course berhasil dihapus.');
+            ->with('success', 'Kursus berhasil dihapus.');
     }
 
+    // Mengambil informasi kursus untuk AJAX
     public function availability(Course $course)
-{
-    $remainingSeats = match ($course->code) {
-        'WEB001' => 12,
-        'PHP001' => 8,
-        'LAR001' => 4,
-        default => 0,
-    };
-
-    return response()->json([
-        'id' => $course->id,
-        'code' => $course->code,
-        'course' => $course->name,
-        'status' => $course->status,
-        'remaining' => $remainingSeats,
-    ]);
-}
+    {
+        return response()->json([
+            'id' => $course->id,
+            'code' => $course->code,
+            'course' => $course->name,
+            'quota' => $course->quota,
+            'status' => $course->status,
+        ]);
+    }
 }

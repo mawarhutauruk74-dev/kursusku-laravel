@@ -12,6 +12,7 @@ class Course extends Model
         'name',
         'description',
         'fee',
+        'quota',
         'start_date',
         'status',
     ];
@@ -21,6 +22,7 @@ class Course extends Model
         return [
             'start_date' => 'date',
             'fee' => 'integer',
+            'quota' => 'integer',
         ];
     }
 
