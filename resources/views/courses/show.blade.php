@@ -1,4 +1,3 @@
-```blade
 @extends('layouts.app')
 
 @section('title', 'Detail Kursus - KursusKu')
@@ -49,6 +48,13 @@
 
         <p>
             {{ $course->start_date?->format('d/m/Y') ?? 'Belum ditentukan' }}
+        </p>
+
+        {{-- Kuota Peserta --}}
+        <h3 class="h6 mt-4">Kuota Peserta</h3>
+
+        <p>
+        {{ $course->quota }} peserta
         </p>
 
         <hr>

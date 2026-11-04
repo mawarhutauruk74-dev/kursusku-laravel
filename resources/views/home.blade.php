@@ -34,7 +34,7 @@
         <div class="col-lg-5">
             <img
                 class="w-100 hero-image"
-                src="{{ asset('images/hero-kursus.png') }}"
+                src="{{ asset('images/image1.png') }}"
                 alt="Ilustrasi kegiatan belajar KursusKu"
             >
         </div>
