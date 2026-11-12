@@ -3,7 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\Course;
+use App\Http\Requests\StoreCourseRequest;
+use App\Http\Requests\UpdateCourseRequest;
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 use Illuminate\View\View;
 
 class CourseController extends Controller
@@ -32,7 +35,11 @@ class CourseController extends Controller
             ->paginate(10)
             ->withQueryString();
 
-        return view('courses.index', compact('courses', 'search', 'status'));
+        return view('courses.index', compact(
+            'courses',
+            'search',
+            'status'
+        ));
     }
 
     // Menampilkan form tambah kursus
@@ -42,17 +49,9 @@ class CourseController extends Controller
     }
 
     // Menyimpan kursus baru
-    public function store(Request $request)
+    public function store(StoreCourseRequest $request)
     {
-        $validated = $request->validate([
-            'code' => 'required|string|max:20|unique:courses,code',
-            'name' => 'required|string|max:120',
-            'description' => 'nullable|string',
-            'fee' => 'required|integer|min:0',
-            'quota' => 'required|integer|min:1|max:500',
-            'start_date' => 'required|date',
-            'status' => 'required|string|in:draft,open,closed',
-        ]);
+        $validated = $request->validated();
 
         Course::create($validated);
 
@@ -74,17 +73,11 @@ class CourseController extends Controller
     }
 
     // Memperbarui data kursus
-    public function update(Request $request, Course $course)
-    {
-        $validated = $request->validate([
-            'code' => 'required|string|max:20|unique:courses,code,' . $course->id,
-            'name' => 'required|string|max:120',
-            'description' => 'nullable|string',
-            'fee' => 'required|integer|min:0',
-            'quota' => 'required|integer|min:1|max:500',
-            'start_date' => 'required|date',
-            'status' => 'required|string|in:draft,open,closed',
-        ]);
+    public function update(
+        UpdateCourseRequest $request,
+        Course $course
+    ) {
+        $validated = $request->validated();
 
         $course->update($validated);
 
@@ -103,14 +96,22 @@ class CourseController extends Controller
             ->with('success', 'Kursus berhasil dihapus.');
     }
 
-    // Mengambil informasi kursus untuk AJAX
-    public function availability(Course $course)
+    // Mengecek ketersediaan kursus
+    public function availability(Course $course): JsonResponse
     {
+        $jumlahPendaftar = $course->enrollments()->count();
+
+        $sisaKursi = max(0, $course->quota - $jumlahPendaftar);
+
         return response()->json([
             'id' => $course->id,
             'code' => $course->code,
             'course' => $course->name,
             'quota' => $course->quota,
+            'jumlah_pendaftar' => $jumlahPendaftar,
+            'remaining' => $sisaKursi,
+            'sisa_kursi' => $sisaKursi,
+            'available_seats' => $sisaKursi,
             'status' => $course->status,
         ]);
     }
